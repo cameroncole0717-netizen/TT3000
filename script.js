@@ -1,5 +1,5 @@
 const URL = "./model/";
-let model, webcam, uartCharacteristic;
+let model, webcam, port, writer;
 
 // Load the Teachable Machine model and start webcam
 async function init() {
@@ -25,6 +25,39 @@ async function predictLoop() {
   }
 }
 
+// Connect to micro:bit via USB serial
+async function connectMicrobit() {
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+
+    const encoder = new TextEncoderStream();
+    encoder.readable.pipeTo(port.writable);
+    writer = encoder.writable.getWriter();
+
+    console.log("✅ Connected to micro:bit via USB");
+  } catch (error) {
+    console.error("❌ Serial connection failed:", error);
+  }
+}
+
+// Send message to micro:bit
+function sendToMicrobit(message) {
+  if (writer) {
+    writer.write(message);
+    console.log("📤 Sent to micro:bit:", message);
+  } else {
+    console.warn("⚠️ micro:bit not connected");
+  }
+}
+
+// Attach connect button listener
+document.getElementById("connectBtn").addEventListener("click", connectMicrobit);
+
+// Start everything
+init();
+
+
 // Connect to micro:bit via Bluetooth
 async function connectMicrobit() {
   try {
@@ -35,3 +68,4 @@ async function connectMicrobit() {
 
     const server = await device.gatt.connect();
     const service = await server.getPrimaryService('
+
