@@ -22,14 +22,22 @@ async function predictLoop() {
 }
 
 async function connectMicrobit() {
-  const device = await navigator.bluetooth.requestDevice({
-    filters: [{ namePrefix: "BBC micro:bit" }],
-    optionalServices: [0xFFE0]
-  });
-  const server = await device.gatt.connect();
-  const service = await server.getPrimaryService(0xFFE0);
-  uartCharacteristic = await service.getCharacteristic(0xFFE1);
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ namePrefix: "BBC micro:bit" }],
+      optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+    });
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+    uartCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+    console.log("Connected to micro:bit");
+  } catch (error) {
+    console.error("Bluetooth connection failed:", error);
+  }
 }
+
 
 function sendToMicrobit(message) {
   if (uartCharacteristic) {
@@ -39,3 +47,4 @@ function sendToMicrobit(message) {
 }
 
 init();
+
