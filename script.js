@@ -43,8 +43,13 @@ function sendToMicrobit(message) {
   if (uartCharacteristic) {
     const encoder = new TextEncoder();
     uartCharacteristic.writeValue(encoder.encode(message));
+    console.log("Sent to micro:bit:", message);
+  } else {
+    console.warn("micro:bit not connected");
   }
 }
 
+
 init();
+
 
